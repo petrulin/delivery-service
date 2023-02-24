@@ -1,0 +1,52 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "initdb-delivery-service"
+spec:
+  template:
+    metadata:
+      name: "initdb"
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: check-db-ready
+          image: postgres:latest
+          env:
+            - name: POSTGRES_HOST
+              value: "my-postgresql"
+            - name: POSTGRES_PORT
+              value: "5432"
+          command:
+            - sh
+            - "-c"
+            - |
+              until pg_isready -h $POSTGRES_HOST  -p  $POSTGRES_PORT;
+              do echo waiting for database; sleep 2; done;
+      containers:
+        - name: initdb
+          image: postgres:latest
+          env:
+            - name: ORDER_SQL
+              valueFrom:
+                configMapKeyRef:
+                  name: order-sql
+                  key: order-sql
+            - name: POSTGRES_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: my-postgresql
+                  key: postgres-password
+          command:
+            - sh
+            - "-c"
+            - |
+              psql postgresql://postgres:$POSTGRES_PASS@my-postgresql:5432/postgres <<EOF
+              $ORDER_SQL
+              EOF
+          envFrom:
+            - secretRef:
+                name: my-postgresql
+            - configMapRef:
+                name: order-sql
+  backoffLimit: 2

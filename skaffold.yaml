@@ -1,0 +1,19 @@
+apiVersion: skaffold/v2beta17
+kind: Config
+metadata:
+  name: delivery-service
+build:
+  local:
+    useBuildkit: true
+  artifacts:
+  - image: dev/delivery-service
+    docker:
+      dockerfile: Dockerfile
+deploy:
+  kubectl:
+    manifests:
+    - deployment.yaml
+portForward:
+- resourceType: service
+  resourceName: delivery-service
+  port: 8020

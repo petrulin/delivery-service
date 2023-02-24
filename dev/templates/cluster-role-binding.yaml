@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "dev.clusterRoleBindingName" .}}
+subjects:
+  - namespace: {{ include "dev.namespace" .}}
+    kind: ServiceAccount
+    name: {{ include "dev.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "dev.clusterRoleName" .}}
+
+{{/*
+Create the namespase of the service to use
+*/}}
+{{- define "service.namespace" -}}
+{{- if .Values.namespaceOverride }}
+{{- default .Values.namespaceOverride }}
+{{- else }}
+{{- default "default" }}
+{{- end }}
+{{- end }}
