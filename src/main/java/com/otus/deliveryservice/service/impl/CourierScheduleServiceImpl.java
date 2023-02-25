@@ -30,7 +30,7 @@ public class CourierScheduleServiceImpl implements CourierScheduleService {
 
     @Override
     public void cancelBookingCourier(BookingCourierDTO bookingCourier) {
-        var courierSchedule =  courierScheduleRepository.findAllByDeliveryDateAndDeliveryHourAndOrderId(bookingCourier.getDeliveryDate(), bookingCourier.getDeliveryHour(), bookingCourier.getOrderId());
+        var courierSchedule =  courierScheduleRepository.findAllByOrderId(bookingCourier.getOrderId());
         courierScheduleRepository.deleteAll(courierSchedule);
     }
 
