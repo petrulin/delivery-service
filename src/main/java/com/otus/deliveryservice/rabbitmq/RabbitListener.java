@@ -30,6 +30,7 @@ public class RabbitListener {
 
     private final MessageService messageService;
     private final CourierService courierService;
+    private final CourierScheduleService courierScheduleService;
     private final RabbitTemplate rt;
 
     @Value("${spring.rabbitmq.queues.order-answer-queue}")
@@ -53,6 +54,14 @@ public class RabbitListener {
                         rt.convertAndSend(orderAnswerExchange, orderAnswerQueue,
                                 new RMessage(UUID.randomUUID().toString(), "deliveryAnswer", answer)
                         );
+                    }
+                    case "cancelBookingCourier" ->  {
+                        om.getTypeFactory().constructCollectionType(ArrayList.class, BookingCourierDTO.class);
+                        var bookingCourierMsg = om.convertValue(message.getMessage(), BookingCourierDTO.class);
+                        courierScheduleService.cancelBookingCourier(bookingCourierMsg);
+                        /*rt.convertAndSend(orderAnswerExchange, orderAnswerQueue,
+                                new RMessage(UUID.randomUUID().toString(), "deliveryAnswer", answer)*/
+
                     }
                     default -> log.warn("::OrderService:: rabbitmq listener method. Unknown message type");
                 }

@@ -10,5 +10,5 @@ public interface CourierScheduleRepository extends JpaRepository<CourierSchedule
 
 
     List<CourierSchedule> findAllByDeliveryDateAndDeliveryHour(LocalDate deliveryDate, Long deliveryHour);
-
+    List<CourierSchedule>  findAllByDeliveryDateAndDeliveryHourAndOrderId(LocalDate deliveryDate, Long deliveryHour, Long orderId);
 }

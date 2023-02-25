@@ -40,6 +40,6 @@ public class CourierServiceImpl implements CourierService {
         } catch (Exception e) {
             return new BookingCourierResponse("Error");
         }
-
     }
+
 }
