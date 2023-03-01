@@ -27,11 +27,11 @@ spec:
         - name: initdb
           image: postgres:latest
           env:
-            - name: ORDER_SQL
+            - name: DELIVERY_SQL
               valueFrom:
                 configMapKeyRef:
-                  name: order-sql
-                  key: order-sql
+                  name: delivery-sql
+                  key: delivery-sql
             - name: POSTGRES_PASS
               valueFrom:
                 secretKeyRef:
@@ -42,11 +42,11 @@ spec:
             - "-c"
             - |
               psql postgresql://postgres:$POSTGRES_PASS@my-postgresql:5432/postgres <<EOF
-              $ORDER_SQL
+              $DELIVERY_SQL
               EOF
           envFrom:
             - secretRef:
                 name: my-postgresql
             - configMapRef:
-                name: order-sql
+                name: delivery-sql
   backoffLimit: 2

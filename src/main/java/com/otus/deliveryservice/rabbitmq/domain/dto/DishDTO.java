@@ -10,12 +10,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class BookingCourierResponse {
-    private String fio;
-    private String phone;
-    private String status;
+public class DishDTO {
+    private Long menuId;
+    private Long count;
 
-    public BookingCourierResponse(String status) {
-        this.status = status;
-    }
 }

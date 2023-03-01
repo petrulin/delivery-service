@@ -6,20 +6,24 @@ spring:
   application:
     name: delivery-service
   rabbitmq:
-    host: 192.168.111.55
+    host: rabbit-rabbitmq.default.svc.cluster.local
     port: 5672
-    username: guest
-    password: guest
+    username: user
+    password: ${RABBIT_PASS}
     virtual-host: "/"
     ssl:
       enabled: false
       verify-hostname: false
     queues:
-      delivery-queue: delivery.queue
-      order-answer-queue: order.answer.queue
+      delivery-queue: otus.delivery.queue
+      service-answer-queue: otus.order.queue
+      pay-queue: otus.pay.queue
+      store-queue: otus.store.queue
     exchanges:
-      delivery-exchange: delivery.exchange
-      order-answer-exchange: order.answer.exchange
+      delivery-exchange: otus.delivery.exchange
+      service-answer-exchange: otus.order.exchange
+      pay-exchange: otus.pay.exchange
+      store-exchange: otus.store.exchange
   data:
     jpa:
       repositories:
@@ -33,10 +37,10 @@ spring:
       idle-timeout: 60000
       max-lifetime: 180000
       leak-detection-threshold: 0
-      jdbc-url: jdbc:postgresql://localhost:60095/postgres
+      jdbc-url: ${DBURL}
       username: delivery_service
       password: "nSGxvmFGxr"
-    url: jdbc:postgresql://localhost:60095/postgres
+    url: ${DBURL}
   jpa:
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQL9Dialect

@@ -2,8 +2,7 @@ package com.otus.deliveryservice.service.impl;
 
 import com.otus.deliveryservice.entity.Courier;
 import com.otus.deliveryservice.entity.CourierSchedule;
-import com.otus.deliveryservice.rabbitmq.domain.dto.BookingCourierDTO;
-import com.otus.deliveryservice.rabbitmq.domain.dto.BookingCourierResponse;
+import com.otus.deliveryservice.rabbitmq.domain.dto.TrxDTO;
 import com.otus.deliveryservice.repository.CourierRepository;
 import com.otus.deliveryservice.service.CourierScheduleService;
 import com.otus.deliveryservice.service.CourierService;
@@ -25,20 +24,27 @@ public class CourierServiceImpl implements CourierService {
     private final CourierScheduleService courierScheduleService;
 
     @Override
-    public BookingCourierResponse bookingCourier(BookingCourierDTO bookingCourier) {
+    public String bookingCourier(TrxDTO trxDTO) {
         try {
-            List<Long> bookedList =  courierScheduleService.findAllbyDeliveryDateanddeliveryHour(bookingCourier.getDeliveryDate(), bookingCourier.getDeliveryHour())
-                    .stream().map(CourierSchedule::getCourierId).toList();
+            List<Long> bookedList =  courierScheduleService.findAllbyDeliveryDateanddeliveryHour(
+                        trxDTO.getOrder().getDeliveryDate(), trxDTO.getOrder().getDeliveryHour()
+                    ).stream().map(CourierSchedule::getCourierId).toList();
             List<Courier> couriers = bookedList.isEmpty() ? courierRepository.findAll() : courierRepository.findAllByIdNotIn(bookedList);
             if (couriers.isEmpty()) {
-                return new BookingCourierResponse("All couriers are busy");
+                return "All couriers are busy";
             }
             Random rand = new Random();
             var selectedCourier = couriers.get(rand.nextInt(couriers.size()));
-            courierScheduleService.save(new CourierSchedule(selectedCourier.getId(), bookingCourier.getDeliveryDate(), bookingCourier.getDeliveryHour(), bookingCourier.getOrderId()));
-            return new BookingCourierResponse(selectedCourier.getFio(), selectedCourier.getPhone(), "Ok");
+            courierScheduleService.save(
+                    new CourierSchedule(
+                            selectedCourier.getId(),
+                            trxDTO.getOrder().getDeliveryDate(),
+                            trxDTO.getOrder().getDeliveryHour(),
+                            trxDTO.getOrder().getOrderId())
+            );
+            return "Ok";
         } catch (Exception e) {
-            return new BookingCourierResponse("Error");
+            return "Error";
         }
     }
 

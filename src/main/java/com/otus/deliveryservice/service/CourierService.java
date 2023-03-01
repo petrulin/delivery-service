@@ -1,10 +1,9 @@
 package com.otus.deliveryservice.service;
 
-import com.otus.deliveryservice.rabbitmq.domain.dto.BookingCourierDTO;
-import com.otus.deliveryservice.rabbitmq.domain.dto.BookingCourierResponse;
+import com.otus.deliveryservice.rabbitmq.domain.dto.TrxDTO;
 
 
 public interface CourierService {
 
-    BookingCourierResponse bookingCourier(BookingCourierDTO bookingCourier);
+    String bookingCourier(TrxDTO trxDTO);
 }

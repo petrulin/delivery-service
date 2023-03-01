@@ -2,9 +2,9 @@ package com.otus.deliveryservice.rabbitmq;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otus.deliveryservice.entity.Message;
-import com.otus.deliveryservice.entity.CourierSchedule;
 import com.otus.deliveryservice.rabbitmq.domain.RMessage;
-import com.otus.deliveryservice.rabbitmq.domain.dto.BookingCourierDTO;
+import com.otus.deliveryservice.rabbitmq.domain.dto.CancelDTO;
+import com.otus.deliveryservice.rabbitmq.domain.dto.TrxDTO;
 import com.otus.deliveryservice.service.CourierService;
 import com.otus.deliveryservice.service.MessageService;
 import com.otus.deliveryservice.service.CourierScheduleService;
@@ -33,10 +33,20 @@ public class RabbitListener {
     private final CourierScheduleService courierScheduleService;
     private final RabbitTemplate rt;
 
-    @Value("${spring.rabbitmq.queues.order-answer-queue}")
-    private String orderAnswerQueue;
-    @Value("${spring.rabbitmq.exchanges.order-answer-exchange}")
-    private String orderAnswerExchange;
+    @Value("${spring.rabbitmq.queues.service-answer-queue}")
+    private String serviceAnswerQueue;
+    @Value("${spring.rabbitmq.exchanges.service-answer-exchange}")
+    private String serviceAnswerExchange;
+
+    @Value("${spring.rabbitmq.queues.pay-queue}")
+    private String payQueue;
+    @Value("${spring.rabbitmq.exchanges.pay-exchange}")
+    private String payExchange;
+
+    @Value("${spring.rabbitmq.queues.store-queue}")
+    private String storeQueue;
+    @Value("${spring.rabbitmq.exchanges.store-exchange}")
+    private String storeExchange;
 
     @Transactional
     @org.springframework.amqp.rabbit.annotation.RabbitListener(queues = "${spring.rabbitmq.queues.delivery-queue}", ackMode = "MANUAL")
@@ -48,21 +58,29 @@ public class RabbitListener {
                 messageService.save(new Message(message.getMsgId()));
                 switch (message.getCmd()) {
                     case "bookingCourier" ->  {
-                        om.getTypeFactory().constructCollectionType(ArrayList.class, BookingCourierDTO.class);
-                        var bookingCourierMsg = om.convertValue(message.getMessage(), BookingCourierDTO.class);
-                        var answer = courierService.bookingCourier(bookingCourierMsg);
-                        rt.convertAndSend(orderAnswerExchange, orderAnswerQueue,
-                                new RMessage(UUID.randomUUID().toString(), "deliveryAnswer", answer)
+                        om.getTypeFactory().constructCollectionType(ArrayList.class, TrxDTO.class);
+                        var trxDTO = om.convertValue(message.getMessage(), TrxDTO.class);
+                        var answer = courierService.bookingCourier(trxDTO);
+                        trxDTO.setDeliveryStatus(answer);
+                        if (!(trxDTO.getDeliveryStatus().equals("Ok")
+                                && trxDTO.getPayStatus().equals("Ok")
+                                && trxDTO.getStoreStatus().equals("Ok"))) {
+                            rt.convertAndSend(storeExchange, storeQueue,
+                                    new RMessage(UUID.randomUUID().toString(), "cancelBookingFood", new CancelDTO(trxDTO.getOrder().getOrderId()))
+                            );
+                            rt.convertAndSend(payExchange, payQueue,
+                                    new RMessage(UUID.randomUUID().toString(), "refund", new CancelDTO(trxDTO.getOrder().getOrderId()))
+                            );
+                        }
+                        rt.convertAndSend(serviceAnswerExchange, serviceAnswerQueue,
+                                new RMessage(UUID.randomUUID().toString(), "result", trxDTO)
                         );
                     }
-                    case "cancelBookingCourier" ->  {
+/*                    case "cancelBookingCourier" ->  {
                         om.getTypeFactory().constructCollectionType(ArrayList.class, BookingCourierDTO.class);
                         var bookingCourierMsg = om.convertValue(message.getMessage(), BookingCourierDTO.class);
                         courierScheduleService.cancelBookingCourier(bookingCourierMsg);
-                        /*rt.convertAndSend(orderAnswerExchange, orderAnswerQueue,
-                                new RMessage(UUID.randomUUID().toString(), "deliveryAnswer", answer)*/
-
-                    }
+                    }*/
                     default -> log.warn("::OrderService:: rabbitmq listener method. Unknown message type");
                 }
             }

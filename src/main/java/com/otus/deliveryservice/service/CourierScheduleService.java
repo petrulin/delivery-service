@@ -1,7 +1,6 @@
 package com.otus.deliveryservice.service;
 
 import com.otus.deliveryservice.entity.CourierSchedule;
-import com.otus.deliveryservice.rabbitmq.domain.dto.BookingCourierDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,5 +12,5 @@ public interface CourierScheduleService {
 
     List<CourierSchedule> findAllbyDeliveryDateanddeliveryHour(LocalDate deliveryDate, Long deliveryHour);
 
-    void cancelBookingCourier(BookingCourierDTO bookingCourier);
+/*    void cancelBookingCourier(BookingCourierDTO bookingCourier);*/
 }

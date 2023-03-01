@@ -15,10 +15,10 @@ public class RabbitMqConfig {
     private String queue;
     @Value("${spring.rabbitmq.exchanges.delivery-exchange}")
     private String exchange;
-    @Value("${spring.rabbitmq.queues.order-answer-queue}")
-    private String orderAnswerQueue;
-    @Value("${spring.rabbitmq.exchanges.order-answer-exchange}")
-    private String orderAnswerExchange;
+    @Value("${spring.rabbitmq.queues.service-answer-queue}")
+    private String serviceAnswerQueue;
+    @Value("${spring.rabbitmq.exchanges.service-answer-exchange}")
+    private String serviceAnswerExchange;
 
 
     @Bean
@@ -46,12 +46,12 @@ public class RabbitMqConfig {
 
     @Bean
     public DirectExchange orderAnswerExchange() {
-        return new DirectExchange(orderAnswerExchange, true, false);
+        return new DirectExchange(serviceAnswerExchange, true, false);
     }
 
     @Bean
     public Queue orderAnswerQueue() {
-        return new Queue(orderAnswerQueue, true, false, false);
+        return new Queue(serviceAnswerQueue, true, false, false);
     }
 
     @Bean
@@ -60,7 +60,7 @@ public class RabbitMqConfig {
     }
     @Bean
     public Binding orderAnswerQueueSyncBinding() {
-        return BindingBuilder.bind(orderAnswerQueue()).to(orderAnswerExchange()).with(orderAnswerQueue);
+        return BindingBuilder.bind(orderAnswerQueue()).to(orderAnswerExchange()).with(serviceAnswerQueue);
     }
 
 
