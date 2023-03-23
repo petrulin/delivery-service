@@ -31,7 +31,7 @@ public class CourierServiceImpl implements CourierService {
                     ).stream().map(CourierSchedule::getCourierId).toList();
             List<Courier> couriers = bookedList.isEmpty() ? courierRepository.findAll() : courierRepository.findAllByIdNotIn(bookedList);
             if (couriers.isEmpty()) {
-                return "All couriers are busy";
+                return "Все курьеры заняты. Выберите  другое время доставки.";
             }
             Random rand = new Random();
             var selectedCourier = couriers.get(rand.nextInt(couriers.size()));
@@ -44,7 +44,7 @@ public class CourierServiceImpl implements CourierService {
             );
             return "Ok";
         } catch (Exception e) {
-            return "Error";
+            return "Ошибка доставки";
         }
     }
 
